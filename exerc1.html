@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tabuada</title>
+  <style>
+    body {
+      font-family: serif;
+      font-size: 20px;
+      padding: 20px;
+      background: white;
+      color: black;
+    }
+
+    #pergunta {
+      font-size: 28px;
+      margin-bottom: 16px;
+    }
+
+    .resposta-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .resposta-row label {
+      font-size: 22px;
+    }
+
+    .resposta-row input {
+      font-size: 20px;
+      padding: 4px 6px;
+      width: 200px;
+      border: 2px solid #4a90d9;
+      outline: none;
+    }
+
+    .resposta-row button {
+      font-size: 20px;
+      padding: 4px 16px;
+      cursor: pointer;
+      border: 1px solid #888;
+      background: #f0f0f0;
+    }
+
+    .resposta-row button:hover {
+      background: #e0e0e0;
+    }
+
+    table {
+      border-collapse: collapse;
+    }
+
+    td {
+      border: 1px solid black;
+      padding: 6px 12px;
+      font-size: 20px;
+      min-width: 80px;
+    }
+
+    #finalMsg {
+      font-size: 22px;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="pergunta"></div>
+
+  <div class="resposta-row">
+    <label for="answerInput">Resposta:</label>
+    <input type="number" id="answerInput" onkeydown="if(event.key==='Enter') checkAnswer()" />
+    <button onclick="checkAnswer()">Verificar</button>
+  </div>
+
+  <table id="tabelaGrid"></table>
+
+  <div id="finalMsg"></div>
+
+<script>
+
+  let contas = [];
+  let tabela = 7;
+  let atual = 0;
+
+  function gerarContas(n) {
+    contas = [];
+    for (let i = 0; i <= 9; i++) {
+      contas.push({
+        multiplicador: i,
+        resposta: n * i,
+        status: '' 
+      });
+    }
+  }
+
+  function encontrarProxima() {
+    return contas.findIndex(c => c.status === '');
+  }
+
+  function renderTabela() {
+    const tabEl = document.getElementById('tabelaGrid');
+    tabEl.innerHTML = '';
+    contas.forEach((c) => {
+      const tr = document.createElement('tr');
+
+      const tdConta = document.createElement('td');
+      tdConta.textContent = `${c.multiplicador} * ${tabela}`;
+
+      const tdStatus = document.createElement('td');
+      tdStatus.textContent = c.status;
+
+      tr.appendChild(tdConta);
+      tr.appendChild(tdStatus);
+      tabEl.appendChild(tr);
+    });
+  }
+
+  function renderPergunta() {
+    atual = encontrarProxima();
+
+    if (atual === -1) {
+      document.getElementById('pergunta').textContent = '';
+      document.getElementById('answerInput').style.display = 'none';
+      document.querySelector('.resposta-row button').style.display = 'none';
+      document.querySelector('.resposta-row label').style.display = 'none';
+      const acertos = contas.filter(c => c.status === 'certo').length;
+      document.getElementById('finalMsg').textContent =
+        `Fim! Você acertou ${acertos} de ${contas.length}.`;
+      renderTabela();
+      return;
+    }
+
+    const c = contas[atual];
+    document.getElementById('pergunta').textContent =
+      `${c.multiplicador} * ${tabela}`;
+    document.getElementById('answerInput').value = '';
+    document.getElementById('answerInput').focus();
+    renderTabela();
+  }
+
+  function checkAnswer() {
+    if (atual === -1) return;
+
+    const input = document.getElementById('answerInput');
+    const val = parseInt(input.value);
+
+    if (isNaN(val)) return;
+
+    if (val === contas[atual].resposta) {
+      contas[atual].status = 'certo';
+    } else {
+      contas[atual].status = 'errado';
+    }
+
+    renderPergunta();
+  }
+
+ gerarContas(tabela);
+  renderPergunta();
+</script>
+</body>
+</html>
